@@ -5,6 +5,8 @@ services:
     build: ./backend
     ports:
       - "8080:8080"
+    environment:
+      - RUST_LOG=info
     volumes:
       - ./backend:/app
       - cargo-cache:/usr/local/cargo/registry
