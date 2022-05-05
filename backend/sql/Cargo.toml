@@ -1,0 +1,16 @@
+[package]
+name = "fantastic-giggle-sql"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.19"
+sqlx = { version = "0.5.13", features = [
+    "postgres",
+    "runtime-tokio-rustls",
+    "time",
+] }
+
+[dev-dependencies]
+fantastic-giggle-test = { path = "../test" }
+tokio = { version = "1.18", features = ["macros", "rt-multi-thread", "rt"] }

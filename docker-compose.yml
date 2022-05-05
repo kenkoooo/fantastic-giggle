@@ -1,12 +1,28 @@
-version: '3.5'
+version: '3.9'
 
 services:
+  postgres:
+    image: postgres:14
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: test
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+
   backend:
     build: ./backend
     ports:
       - "8080:8080"
+    env_file:
+      - ./backend/.env
     environment:
-      - RUST_LOG=info
+      RUST_LOG: info,sqlx=warn
+      DATABASE_URL: postgres://user:password@postgres:5432/test
     volumes:
       - ./backend:/app
       - cargo-cache:/usr/local/cargo/registry
@@ -26,3 +42,4 @@ volumes:
   cargo-cache: null
   target-cache: null
   node_modules: null
+  postgres: null

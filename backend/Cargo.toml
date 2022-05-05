@@ -1,5 +1,5 @@
 [package]
-name = "backend"
+name = "fantastic-giggle-backend"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,9 +7,16 @@ edition = "2021"
 
 [dependencies]
 actix-web = { version = "4.0", features = ["cookies"] }
-dotenv = "0.15"
 egg-mode = { version = "0.16", features = [] }
 env_logger = "0.9"
 log = "0.4"
 tokio = { version = "1.18", features = ["macros", "rt-multi-thread", "rt"] }
 serde = { version = "1", features = ["derive"] }
+fantastic-giggle-sql = { path = "./sql" }
+fantastic-giggle-worker = { path = "./worker" }
+
+[dev-dependencies]
+fantastic-giggle-test = { path = "./test" }
+
+[workspace]
+members = ["sql", "test", "worker"]

@@ -1,6 +1,5 @@
 use crate::Result;
 use actix_web::{
-    cookie::Cookie,
     get,
     http::header::LOCATION,
     web::{self, ServiceConfig},
@@ -10,6 +9,7 @@ use egg_mode::{
     auth::{access_token, authorize_url, request_token, verify_tokens},
     KeyPair, Token,
 };
+use fantastic_giggle_sql::{AccessToken, PgPool};
 use serde::{Deserialize, Serialize};
 
 pub fn config_services(cfg: &mut ServiceConfig) {
@@ -17,9 +17,9 @@ pub fn config_services(cfg: &mut ServiceConfig) {
 }
 
 #[get("/api/login")]
-async fn login() -> Result<HttpResponse> {
-    let token = load_token()?;
-    let request_token = request_token(&token, "http://localhost:8080/api/callback").await?;
+async fn login(consumer: web::Data<KeyPair>) -> Result<HttpResponse> {
+    let consumer = consumer.as_ref().clone();
+    let request_token = request_token(&consumer, "http://localhost:8080/api/callback").await?;
     let auth_url = authorize_url(&request_token);
     Ok(HttpResponse::Found()
         .append_header((LOCATION, auth_url))
@@ -33,21 +33,32 @@ struct CallbackQuery {
 }
 
 #[get("/api/callback")]
-async fn callback(query: web::Query<CallbackQuery>) -> Result<HttpResponse> {
+async fn callback(
+    query: web::Query<CallbackQuery>,
+    pool: web::Data<PgPool>,
+    consumer: web::Data<KeyPair>,
+) -> Result<HttpResponse> {
     let query = query.into_inner();
-    let token = load_token()?;
+    let consumer = consumer.as_ref().clone();
     let request_token = KeyPair::new(query.oauth_token, "");
-    let (token, _, _) = access_token(token, &request_token, &query.oauth_verifier).await?;
+    let (token, user_id, _) = access_token(consumer, &request_token, &query.oauth_verifier).await?;
 
     let mut response = HttpResponse::Found();
-    response.append_header((LOCATION, "http://localhost:8080/"));
+    response.append_header((LOCATION, "/"));
     if let Token::Access {
         consumer: _,
         access,
     } = token
     {
-        response.cookie(Cookie::new("key", access.key));
-        response.cookie(Cookie::new("secret", access.secret));
+        AccessToken::save(
+            pool.as_ref(),
+            AccessToken {
+                id: user_id as i64,
+                access_key: access.key.to_string(),
+                access_secret: access.secret.to_string(),
+            },
+        )
+        .await?;
     }
     Ok(response.finish())
 }
@@ -59,14 +70,14 @@ struct UserResponse {
 }
 
 #[get("/api/user")]
-async fn user(request: HttpRequest) -> Result<HttpResponse> {
+async fn user(request: HttpRequest, consumer: web::Data<KeyPair>) -> Result<HttpResponse> {
     let access = match request.token() {
         Some(token) => token,
         None => {
             return Ok(HttpResponse::BadRequest().finish());
         }
     };
-    let consumer = load_token()?;
+    let consumer = consumer.as_ref().clone();
 
     let token = Token::Access { consumer, access };
     let user = verify_tokens(&token).await?;
@@ -74,12 +85,6 @@ async fn user(request: HttpRequest) -> Result<HttpResponse> {
         screen_name: user.screen_name.to_string(),
         id: user.id,
     }))
-}
-
-fn load_token() -> Result<KeyPair> {
-    let api_key = std::env::var("API_KEY")?;
-    let api_secret = std::env::var("API_SECRET")?;
-    Ok(KeyPair::new(api_key, api_secret))
 }
 
 trait HttpRequestExt {

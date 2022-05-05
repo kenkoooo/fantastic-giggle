@@ -1,0 +1,11 @@
+[package]
+name = "fantastic-giggle-worker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fantastic-giggle-sql = { path = "../sql" }
+egg-mode = { version = "0.16", features = [] }
+tokio = "1.18"
+log = "0.4"
+async-trait = "0.1"
