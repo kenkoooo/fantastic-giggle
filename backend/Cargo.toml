@@ -14,9 +14,10 @@ tokio = { version = "1.18", features = ["macros", "rt-multi-thread", "rt"] }
 serde = { version = "1", features = ["derive"] }
 fantastic-giggle-sql = { path = "./sql" }
 fantastic-giggle-worker = { path = "./worker" }
+fantastic-giggle-api = { path = "./api" }
 
 [dev-dependencies]
 fantastic-giggle-test = { path = "./test" }
 
 [workspace]
-members = ["sql", "test", "worker"]
+members = ["api", "sql", "test", "worker"]

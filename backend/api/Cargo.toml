@@ -1,0 +1,11 @@
+[package]
+name = "fantastic-giggle-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fantastic-giggle-sql = { path = "../sql" }
+egg-mode = { version = "0.16", features = [] }
+log = "0.4"
+actix-web = { version = "4.0", features = ["cookies"] }
+serde = { version = "1", features = ["derive"] }

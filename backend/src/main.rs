@@ -1,6 +1,6 @@
 use actix_web::{web, App, HttpServer};
 use egg_mode::KeyPair;
-use fantastic_giggle_backend::config_services;
+use fantastic_giggle_api::config_services;
 use fantastic_giggle_sql::PgPool;
 use fantastic_giggle_worker::{Followers, Friends, IdSynchronizer};
 

@@ -611,12 +611,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77f3309417938f28bf8228fcff79a4a37103981e3e186d2ccd19c74b38f4eb71"
 
 [[package]]
+name = "fantastic-giggle-api"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "egg-mode",
+ "fantastic-giggle-sql",
+ "log",
+ "serde",
+]
+
+[[package]]
 name = "fantastic-giggle-backend"
 version = "0.1.0"
 dependencies = [
  "actix-web",
  "egg-mode",
  "env_logger",
+ "fantastic-giggle-api",
  "fantastic-giggle-sql",
  "fantastic-giggle-test",
  "fantastic-giggle-worker",
