@@ -39,7 +39,7 @@ impl FollowBackWorker {
 
             let mut heap = BinaryHeap::new();
             for user in users {
-                let mut follow_back_user_ids = match fetch_follow_back_user_ids(
+                let follow_back_user_ids = match fetch_follow_back_user_ids(
                     &user,
                     &self.pool,
                     self.consumer.clone(),
@@ -52,8 +52,6 @@ impl FollowBackWorker {
                         continue;
                     }
                 };
-                let mut rng = thread_rng();
-                follow_back_user_ids.shuffle(&mut rng);
                 let consumer = self.consumer.clone();
                 let access = KeyPair::new(user.access_key, user.access_secret);
                 let token = egg_mode::Token::Access { consumer, access };
@@ -111,11 +109,12 @@ async fn fetch_follow_back_user_ids(
         follower_ids.remove(&friend.target_id);
     }
 
-    let following_ids = follower_ids
+    let mut following_ids = follower_ids
         .into_iter()
-        .take(RELATION_LOOKUP_LIMIT)
         .map(|id| id as u64)
         .collect::<Vec<_>>();
+    following_ids.shuffle(&mut thread_rng());
+    following_ids.truncate(RELATION_LOOKUP_LIMIT);
 
     let access = KeyPair::new(user.access_key.clone(), user.access_secret.clone());
     let token = egg_mode::Token::Access { consumer, access };
