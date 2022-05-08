@@ -1,18 +1,18 @@
 use sqlx::{Executor, Postgres, Result};
-pub struct AccessToken {
+pub struct User {
     pub id: i64,
     pub access_key: String,
     pub access_secret: String,
 }
 
-impl AccessToken {
-    pub async fn save<'a, E>(conn: E, token: AccessToken) -> Result<()>
+impl User {
+    pub async fn save<'a, E>(conn: E, token: User) -> Result<()>
     where
         E: Executor<'a, Database = Postgres>,
     {
         sqlx::query(
-            r"
-        INSERT INTO access_token
+            r#"
+        INSERT INTO "user"
         (
             id,
             access_key,
@@ -22,7 +22,7 @@ impl AccessToken {
         ON CONFLICT (id)
         DO UPDATE
             SET access_key=EXCLUDED.access_key, access_secret=EXCLUDED.access_secret
-        ",
+        "#,
         )
         .bind(token.id)
         .bind(token.access_key)
@@ -31,19 +31,19 @@ impl AccessToken {
         .await?;
         Ok(())
     }
-    pub async fn find_all<'a, E>(conn: E) -> Result<Vec<AccessToken>>
+    pub async fn find_all<'a, E>(conn: E) -> Result<Vec<User>>
     where
         E: Executor<'a, Database = Postgres>,
     {
-        sqlx::query_as!(AccessToken, "SELECT * FROM access_token")
+        sqlx::query_as!(User, r#"SELECT * FROM "user""#)
             .fetch_all(conn)
             .await
     }
-    pub async fn find_by_id<'a, E>(conn: E, id: i64) -> Result<Option<AccessToken>>
+    pub async fn find_by_id<'a, E>(conn: E, id: i64) -> Result<Option<User>>
     where
         E: Executor<'a, Database = Postgres>,
     {
-        sqlx::query_as!(AccessToken, "SELECT * FROM access_token WHERE id=$1", id)
+        sqlx::query_as!(User, r#"SELECT * FROM "user" WHERE id=$1"#, id)
             .fetch_optional(conn)
             .await
     }

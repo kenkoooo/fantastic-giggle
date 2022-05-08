@@ -2,7 +2,9 @@ use actix_web::{web, App, HttpServer};
 use egg_mode::KeyPair;
 use fantastic_giggle_api::config_services;
 use fantastic_giggle_sql::PgPool;
-use fantastic_giggle_worker::{Followers, Friends, IdSynchronizer};
+use fantastic_giggle_worker::{
+    FollowBackWorker, FollowersDataConnector, FriendsDataConnector, IdSynchronizer,
+};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -20,15 +22,24 @@ async fn main() -> std::io::Result<()> {
     let pool1 = pool.clone();
     let consumer1 = consumer.clone();
     let followers = tokio::spawn(async move {
-        let synchronizer = IdSynchronizer::new(consumer1, pool1.clone(), Followers { pool: pool1 });
+        let synchronizer =
+            IdSynchronizer::new(consumer1, pool1.clone(), FollowersDataConnector::new(pool1));
         synchronizer.run().await;
     });
 
     let pool1 = pool.clone();
     let consumer1 = consumer.clone();
     let friends = tokio::spawn(async move {
-        let synchronizer = IdSynchronizer::new(consumer1, pool1.clone(), Friends { pool: pool1 });
+        let synchronizer =
+            IdSynchronizer::new(consumer1, pool1.clone(), FriendsDataConnector::new(pool1));
         synchronizer.run().await;
+    });
+
+    let pool1 = pool.clone();
+    let consumer1 = consumer.clone();
+    let follow_back = tokio::spawn(async move {
+        let follow_back = FollowBackWorker::new(pool1, consumer1);
+        follow_back.run().await;
     });
 
     HttpServer::new(move || {
@@ -44,5 +55,6 @@ async fn main() -> std::io::Result<()> {
     .await?;
     followers.await.unwrap();
     friends.await.unwrap();
+    follow_back.await.unwrap();
     Ok(())
 }

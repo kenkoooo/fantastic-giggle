@@ -9,7 +9,7 @@ use egg_mode::{
     auth::{access_token, authorize_url, request_token},
     KeyPair, Token,
 };
-use fantastic_giggle_sql::{AccessToken, PgPool};
+use fantastic_giggle_sql::{PgPool, User};
 use serde::Deserialize;
 
 #[get("/api/login")]
@@ -46,9 +46,9 @@ pub(crate) async fn callback(
         access,
     } = token
     {
-        AccessToken::save(
+        User::save(
             pool.as_ref(),
-            AccessToken {
+            User {
                 id: user_id as i64,
                 access_key: access.key.to_string(),
                 access_secret: access.secret.to_string(),

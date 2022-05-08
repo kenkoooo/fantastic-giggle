@@ -9,3 +9,5 @@ egg-mode = { version = "0.16", features = [] }
 tokio = "1.18"
 log = "0.4"
 async-trait = "0.1"
+anyhow = { version = "1.0", features = ["backtrace"] }
+rand = "0.8.5"
