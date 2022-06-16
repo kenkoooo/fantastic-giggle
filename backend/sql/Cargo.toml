@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.19"
-sqlx = { version = "0.5.13", features = [
+sqlx = { version = "0.6.0", features = [
     "postgres",
     "runtime-tokio-rustls",
     "time",
