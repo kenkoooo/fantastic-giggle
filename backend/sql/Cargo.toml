@@ -13,4 +13,4 @@ sqlx = { version = "0.5.13", features = [
 
 [dev-dependencies]
 fantastic-giggle-test = { path = "../test" }
-tokio = { version = "1.18", features = ["macros", "rt-multi-thread", "rt"] }
+tokio = { version = "1.20", features = ["macros", "rt-multi-thread", "rt"] }
